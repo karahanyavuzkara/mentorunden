@@ -4,11 +4,14 @@ import Link from 'next/link';
 import { useState, useEffect } from "react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Navbar() {
   const [clicked, setClicked] = useState(false);
   const { user, loading, signOut } = useAuth();
   const router = useRouter();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -16,10 +19,38 @@ export default function Navbar() {
     router.refresh();
   };
 
-    const handleLogoClick = () => {
-      setClicked(true);
-      setTimeout(() => setClicked(false), 300);
-    };
+  const handleLogoClick = () => {
+    setClicked(true);
+    setTimeout(() => setClicked(false), 300);
+  };
+
+  // Fetch user profile for avatar
+  useEffect(() => {
+    if (user) {
+      const fetchProfile = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('avatar_url, full_name')
+            .eq('id', user.id)
+            .single();
+
+          if (error) throw error;
+          if (data) {
+            setAvatarUrl(data.avatar_url);
+            setFullName(data.full_name);
+          }
+        } catch (err) {
+          console.error('Error fetching profile:', err);
+        }
+      };
+
+      fetchProfile();
+    } else {
+      setAvatarUrl(null);
+      setFullName(null);
+    }
+  }, [user]);
 
   return (
     <nav className="relative z-10 border-b border-white/10 backdrop-blur">
@@ -74,9 +105,22 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/profile"
-                  className="text-gray-300 hover:text-white transition"
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:ring-2 hover:ring-indigo-500/50 transition"
+                  title="Profile"
                 >
-                  Profile
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={fullName || user.email || 'Profile'}
+                      className="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/30"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-indigo-600/20 border-2 border-indigo-500/30 flex items-center justify-center">
+                      <span className="text-sm font-semibold text-indigo-400">
+                        {fullName?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  )}
                 </Link>
                 <span className="text-gray-500">|</span>
                 <span className="text-gray-300 text-sm">{user.email}</span>
