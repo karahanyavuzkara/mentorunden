@@ -91,10 +91,6 @@ export default function Home() {
                 Blog
               </Link>
 
-              <button className="text-gray-300 hover:text-white transition">
-                EN
-              </button>
-
               {loading ? (
                 <span className="text-gray-400">Loading...</span>
               ) : (
