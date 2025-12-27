@@ -26,6 +26,7 @@ export default function EditBlogPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [blog, setBlog] = useState<Blog | null>(null);
   const [title, setTitle] = useState('');
@@ -36,9 +37,30 @@ export default function EditBlogPage() {
 
   useEffect(() => {
     if (params.id && user) {
+      checkAdminStatus();
       fetchBlog(params.id as string);
     }
   }, [params.id, user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data?.role === 'admin' || data?.is_admin === true) {
+        setIsAdmin(true);
+      }
+    } catch (err) {
+      console.error('Error checking admin status:', err);
+    }
+  };
 
   const fetchBlog = async (id: string) => {
     try {
@@ -50,10 +72,23 @@ export default function EditBlogPage() {
 
       if (error) throw error;
 
-      // Check if user is the author
-      if (data.author_id !== user?.id) {
-        setError('You do not have permission to edit this blog post');
-        return;
+      // Check if user is the author or admin
+      if (data.author_id !== user?.id && !isAdmin) {
+        // Re-check admin status if not already checked
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('role, is_admin')
+          .eq('id', user?.id)
+          .single();
+        
+        const userIsAdmin = profileData?.role === 'admin' || profileData?.is_admin === true;
+        
+        if (!userIsAdmin) {
+          setError('You do not have permission to edit this blog post');
+          return;
+        }
+        
+        setIsAdmin(true);
       }
 
       setBlog(data);

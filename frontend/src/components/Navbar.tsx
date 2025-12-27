@@ -12,6 +12,7 @@ export default function Navbar() {
   const router = useRouter();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [fullName, setFullName] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<{ role: string; is_admin?: boolean } | null>(null);
 
   const handleSignOut = async () => {
     await signOut();
@@ -31,7 +32,7 @@ export default function Navbar() {
         try {
           const { data, error } = await supabase
             .from('profiles')
-            .select('avatar_url, full_name')
+            .select('avatar_url, full_name, role, is_admin')
             .eq('id', user.id)
             .single();
 
@@ -39,6 +40,7 @@ export default function Navbar() {
           if (data) {
             setAvatarUrl(data.avatar_url);
             setFullName(data.full_name);
+            setUserProfile({ role: data.role, is_admin: data.is_admin || false });
           }
         } catch (err) {
           console.error('Error fetching profile:', err);
@@ -49,6 +51,7 @@ export default function Navbar() {
     } else {
       setAvatarUrl(null);
       setFullName(null);
+      setUserProfile(null);
     }
   }, [user]);
 
@@ -92,6 +95,12 @@ export default function Navbar() {
             ) : user ? (
               <>
                 <Link
+                  href="/collab"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Collab
+                </Link>
+                <Link
                   href="/blog"
                   className="text-gray-300 hover:text-white transition"
                 >
@@ -103,6 +112,14 @@ export default function Navbar() {
                 >
                   Dashboard
                 </Link>
+                {(userProfile?.role === 'admin' || userProfile?.is_admin === true) && (
+                  <Link
+                    href="/admin"
+                    className="text-gray-300 hover:text-white transition"
+                  >
+                    Admin
+                  </Link>
+                )}
                 <Link
                   href="/profile"
                   className="flex items-center justify-center w-10 h-10 rounded-full hover:ring-2 hover:ring-indigo-500/50 transition"
@@ -133,6 +150,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Link
+                  href="/collab"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Collab
+                </Link>
                 <Link
                   href="/blog"
                   className="text-gray-300 hover:text-white transition"

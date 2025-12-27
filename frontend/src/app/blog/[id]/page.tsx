@@ -29,12 +29,39 @@ export default function BlogDetailPage() {
   const [blog, setBlog] = useState<Blog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userProfile, setUserProfile] = useState<{ role: string; is_admin?: boolean } | null>(null);
 
   useEffect(() => {
     if (params.id) {
       fetchBlog(params.id as string);
     }
   }, [params.id]);
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role, is_admin')
+        .eq('id', user.id)
+        .single();
+
+      if (error) throw error;
+      
+      if (data) {
+        setUserProfile({ role: data.role, is_admin: data.is_admin || false });
+      }
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
+  };
 
   const fetchBlog = async (id: string) => {
     try {
@@ -153,8 +180,8 @@ export default function BlogDetailPage() {
           ← Back to Blog
         </Link>
 
-        {/* Author Actions (if owner) */}
-        {user && user.id === blog.author_id && (
+        {/* Author/Admin Actions */}
+        {user && (user.id === blog.author_id || (userProfile?.role === 'admin' || userProfile?.is_admin === true)) && (
           <div className="mb-6 flex gap-4">
             <Link
               href={`/blog/${blog.id}/edit`}
