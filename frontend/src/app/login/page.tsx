@@ -10,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
   const { signIn } = useAuth();
   const router = useRouter();
 
@@ -30,72 +31,91 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-              create a new account
+    <div className="relative min-h-screen overflow-hidden bg-black text-white flex items-center justify-center px-6">
+
+      {/* BACKGROUND GLOW */}
+      <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
+      <div className="absolute top-1/3 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[160px]" />
+
+      <div className="relative z-10 w-full max-w-md">
+
+        {/* TITLE ABOVE CARD */}
+        <h1
+          className="
+            mb-12 text-center
+            text-5xl font-extrabold text-white
+            drop-shadow-[0_0_50px_rgba(255,255,255,0.95)]
+          "
+        >
+          Sign In
+        </h1>
+
+        {/* CARD */}
+        <div className="rounded-2xl bg-black/60 backdrop-blur-xl p-8 shadow-lg shadow-black/40 border border-white/10">
+
+          <p className="mb-6 text-center text-sm text-gray-400">
+            Don’t have an account?{' '}
+            <Link href="/signup" className="text-indigo-400 hover:text-indigo-300 transition">
+              Sign Up
             </Link>
           </p>
-        </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="email" className="sr-only">
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+
+            {error && (
+              <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400">
+                {error}
+              </div>
+            )}
+
+            <input
+              type="email"
+              placeholder="Email address"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="
+                w-full rounded-xl bg-gray-700/40 px-5 py-3
+                text-sm text-white placeholder-gray-400
+                outline-none backdrop-blur-md
+                focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
+                transition
+              "
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="
+                w-full rounded-xl bg-gray-700/40 px-5 py-3
+                text-sm text-white placeholder-gray-400
+                outline-none backdrop-blur-md
+                focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
+                transition
+              "
+            />
+
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="
+                mt-4 w-full rounded-xl bg-indigo-600 py-3
+                font-semibold text-white
+                transition
+                hover:bg-indigo-700
+                disabled:opacity-50
+                shadow-[0_0_35px_rgba(99,102,241,0.5)]
+                hover:shadow-[0_0_55px_rgba(99,102,241,0.8)]
+              "
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );
 }
-
