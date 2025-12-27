@@ -48,12 +48,13 @@ export function generateGoogleCalendarLink(
 
 /**
  * Generate Google Meet link
- * Note: In production, use Google Calendar API to create events with Meet links
+ * Note: This creates a "new meeting" link that will generate a meeting when clicked.
+ * For production, use Google Calendar API to create events with Meet links.
  */
 export function generateGoogleMeetLink(): string {
-  // Generate a random meet code
-  const meetCode = Math.random().toString(36).substring(2, 15);
-  return `https://meet.google.com/${meetCode}`;
+  // Use Google Meet's "new meeting" link which creates a meeting on demand
+  // This is more reliable than generating random codes
+  return 'https://meet.google.com/new';
 }
 
 /**

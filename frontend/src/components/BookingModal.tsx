@@ -93,7 +93,7 @@ export default function BookingModal({
       );
 
       // Create booking
-      const { error: bookingError } = await supabase
+      const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .insert({
           student_id: user.id,
@@ -103,9 +103,21 @@ export default function BookingModal({
           status: 'pending',
           notes: notes || null,
           meeting_link: meetLink,
-        });
+        })
+        .select()
+        .single();
 
       if (bookingError) throw bookingError;
+
+      console.log('✅ Booking created:', bookingData?.id);
+
+      // Open Google Calendar link in new tab for user to add to calendar
+      if (calendarLink && bookingData) {
+        // Small delay to ensure booking is saved
+        setTimeout(() => {
+          window.open(calendarLink, '_blank');
+        }, 500);
+      }
 
       onSuccess();
       onClose();

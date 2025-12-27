@@ -168,6 +168,54 @@ export default function DashboardPage() {
     }
   };
 
+  const handleCancelBooking = async (bookingId: string) => {
+    if (!confirm('Are you sure you want to cancel this session? The student will be notified via email.')) {
+      return;
+    }
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('You must be logged in to cancel a booking');
+        return;
+      }
+
+      // Call backend API to cancel booking and send email
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+      console.log('=== Frontend: Cancelling booking ===');
+      console.log('Booking ID:', bookingId);
+      console.log('Booking ID type:', typeof bookingId);
+      console.log('Booking ID length:', bookingId?.length);
+      console.log('User ID:', user.id);
+      console.log('API URL:', apiUrl);
+      
+      const response = await fetch(`${apiUrl}/api/bookings/${bookingId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.id,
+        }),
+      });
+
+      const data = await response.json();
+      console.log('Backend response:', data);
+
+      if (!response.ok) {
+        console.error('Cancel booking error:', data);
+        throw new Error(data.message || 'Failed to cancel booking');
+      }
+
+      // Refresh bookings
+      await fetchBookings();
+      alert('Session cancelled successfully. The student has been notified via email.');
+    } catch (err: any) {
+      console.error('Error cancelling booking:', err);
+      alert(err.message || 'Failed to cancel booking. Please check if the backend server is running.');
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-black text-white">
@@ -294,6 +342,162 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* My Sessions */}
+              <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-6 md:col-span-2 lg:col-span-3">
+                <h3 className="text-xl font-semibold mb-4">My Sessions</h3>
+                {bookingsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  </div>
+                ) : bookings.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No sessions yet</p>
+                    <p className="text-sm mt-2">Your upcoming sessions will appear here</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {bookings
+                      .filter((b) => {
+                        const startTime = new Date(b.start_time);
+                        const now = new Date();
+                        // Show upcoming and recent sessions (within last 7 days)
+                        return startTime >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                      })
+                      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+                      .map((booking) => {
+                        const startTime = new Date(booking.start_time);
+                        const endTime = new Date(booking.end_time);
+                        const isUpcoming = startTime > new Date();
+                        const isPast = endTime < new Date();
+                        
+                        return (
+                          <div
+                            key={booking.id}
+                            className={`flex items-center gap-4 p-4 rounded-lg border transition ${
+                              isUpcoming
+                                ? 'bg-indigo-600/10 border-indigo-500/50 hover:border-indigo-500'
+                                : isPast
+                                ? 'bg-white/5 border-white/10 opacity-60'
+                                : 'bg-white/5 border-white/10 hover:border-indigo-500/50'
+                            }`}
+                          >
+                            {/* Avatar */}
+                            {profile?.role === 'mentor' ? (
+                              booking.student_avatar ? (
+                                <img
+                                  src={booking.student_avatar}
+                                  alt={booking.student_name || 'Student'}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-indigo-600/20 flex items-center justify-center">
+                                  <span className="text-lg text-indigo-400">
+                                    {booking.student_name?.[0]?.toUpperCase() || 'S'}
+                                  </span>
+                                </div>
+                              )
+                            ) : (
+                              booking.mentor_avatar ? (
+                                <img
+                                  src={booking.mentor_avatar}
+                                  alt={booking.mentor_name || 'Mentor'}
+                                  className="w-12 h-12 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-indigo-600/20 flex items-center justify-center">
+                                  <span className="text-lg text-indigo-400">
+                                    {booking.mentor_name?.[0]?.toUpperCase() || 'M'}
+                                  </span>
+                                </div>
+                              )
+                            )}
+
+                            {/* Session Info */}
+                            <div className="flex-1">
+                              <div className="font-medium">
+                                {profile?.role === 'mentor' 
+                                  ? `Session with ${booking.student_name || 'Student'}`
+                                  : `Session with ${booking.mentor_name || 'Mentor'}`}
+                              </div>
+                              <div className="text-sm text-gray-400">
+                                {startTime.toLocaleDateString('en-US', {
+                                  weekday: 'short',
+                                  month: 'short',
+                                  day: 'numeric',
+                                })} at {startTime.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true,
+                                })} - {endTime.toLocaleTimeString('en-US', {
+                                  hour: 'numeric',
+                                  minute: '2-digit',
+                                  hour12: true,
+                                })}
+                              </div>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className={`text-xs px-2 py-1 rounded ${
+                                  booking.status === 'confirmed'
+                                    ? 'bg-green-600/20 text-green-400'
+                                    : booking.status === 'pending'
+                                    ? 'bg-yellow-600/20 text-yellow-400'
+                                    : booking.status === 'completed'
+                                    ? 'bg-blue-600/20 text-blue-400'
+                                    : 'bg-gray-600/20 text-gray-400'
+                                }`}>
+                                  {booking.status}
+                                </span>
+                                {isPast && (
+                                  <span className="text-xs text-gray-500">Past</span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-3">
+                              {booking.meeting_link && isUpcoming && (
+                                <a
+                                  href={booking.meeting_link}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition text-sm font-medium"
+                                >
+                                  Join Meet
+                                </a>
+                              )}
+                              {profile?.role === 'mentor' && isUpcoming && booking.status !== 'cancelled' && (
+                                <button
+                                  onClick={() => handleCancelBooking(booking.id)}
+                                  className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 rounded-lg transition text-sm font-medium text-red-400"
+                                >
+                                  Cancel
+                                </button>
+                              )}
+                              {profile?.role === 'student' && booking.mentor_id && (
+                                <Link
+                                  href={`/mentors/${booking.mentor_id}`}
+                                  className="text-sm text-indigo-400 hover:text-indigo-300 transition"
+                                >
+                                  View Profile →
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    {bookings.filter((b) => {
+                      const startTime = new Date(b.start_time);
+                      const now = new Date();
+                      return startTime >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    }).length === 0 && (
+                      <div className="text-center py-8 text-gray-400">
+                        <p>No upcoming or recent sessions</p>
+                        <p className="text-sm mt-2">Book a session to get started</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* My Students / My Mentors */}

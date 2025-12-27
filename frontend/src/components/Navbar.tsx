@@ -47,12 +47,6 @@ export default function Navbar() {
           {/* Navigation Links */}
           <div className="flex items-center gap-6">
             <Link
-              href="/blog"
-              className="text-gray-300 hover:text-white transition"
-            >
-              Blog
-            </Link>
-            <Link
               href="/become-mentor"
               className="text-gray-300 hover:text-white transition"
             >
@@ -66,6 +60,12 @@ export default function Navbar() {
               <span className="text-gray-400">Loading...</span>
             ) : user ? (
               <>
+                <Link
+                  href="/blog"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Blog
+                </Link>
                 <Link
                   href="/dashboard"
                   className="text-gray-300 hover:text-white transition"
@@ -89,6 +89,12 @@ export default function Navbar() {
               </>
             ) : (
               <>
+                <Link
+                  href="/blog"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Blog
+                </Link>
                 <Link
                   href="/login"
                   className="text-gray-300 hover:text-white transition"

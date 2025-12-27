@@ -16,9 +16,18 @@ interface Profile {
   created_at: string;
 }
 
+interface MentorProfile {
+  id: string;
+  user_id: string;
+  bio: string | null;
+  expertise: string[];
+  hourly_rate: number | null;
+}
+
 export default function ProfilePage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [mentorProfile, setMentorProfile] = useState<MentorProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -28,6 +37,8 @@ export default function ProfilePage() {
   // Form state
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
+  const [expertise, setExpertise] = useState<string[]>([]);
+  const [newExpertise, setNewExpertise] = useState('');
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -42,19 +53,43 @@ export default function ProfilePage() {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
+      // Fetch profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
 
-      if (data) {
-        setProfile(data);
-        setFullName(data.full_name || '');
-        setBio(data.bio || '');
-        setAvatarPreview(data.avatar_url);
+      if (profileData) {
+        setProfile(profileData);
+        setFullName(profileData.full_name || '');
+        setBio(profileData.bio || '');
+        setAvatarPreview(profileData.avatar_url);
+      }
+
+      // Fetch mentor profile if user is a mentor
+      if (profileData?.role === 'mentor') {
+        const { data: mentorData, error: mentorError } = await supabase
+          .from('mentors')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (mentorError && mentorError.code !== 'PGRST116') {
+          // Mentor record doesn't exist, but user is marked as mentor
+          // This is okay - we'll create it when they save
+          console.log('Mentor record not found, will be created on save');
+          setExpertise([]);
+        } else if (mentorData) {
+          setMentorProfile(mentorData);
+          setExpertise(mentorData.expertise || []);
+          // Use mentor bio if available, otherwise use profile bio
+          if (mentorData.bio) {
+            setBio(mentorData.bio);
+          }
+        }
       }
     } catch (err: any) {
       console.error('Error fetching profile:', err);
@@ -89,7 +124,7 @@ export default function ProfilePage() {
       }
 
       // Update profile
-      const { error } = await supabase
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           full_name: fullName || null,
@@ -98,7 +133,40 @@ export default function ProfilePage() {
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Update or create mentor profile if user is a mentor
+      if (profile?.role === 'mentor') {
+        if (mentorProfile) {
+          // Update existing mentor profile
+          const { error: mentorError } = await supabase
+            .from('mentors')
+            .update({
+              bio: bio || null,
+              expertise: expertise,
+            })
+            .eq('id', mentorProfile.id);
+
+          if (mentorError) throw mentorError;
+        } else {
+          // Create new mentor profile if it doesn't exist
+          const { data: newMentor, error: mentorError } = await supabase
+            .from('mentors')
+            .insert({
+              user_id: user.id,
+              bio: bio || null,
+              expertise: expertise,
+              is_active: true,
+            })
+            .select()
+            .single();
+
+          if (mentorError) throw mentorError;
+          if (newMentor) {
+            setMentorProfile(newMentor);
+          }
+        }
+      }
 
       setSuccess(true);
       setEditing(false);
@@ -122,9 +190,35 @@ export default function ProfilePage() {
       setBio(profile.bio || '');
       setAvatarPreview(profile.avatar_url);
     }
+    if (mentorProfile) {
+      setExpertise(mentorProfile.expertise || []);
+      if (mentorProfile.bio) {
+        setBio(mentorProfile.bio || '');
+      }
+    }
     setAvatarFile(null);
+    setNewExpertise('');
     setEditing(false);
     setError(null);
+  };
+
+  const addExpertise = () => {
+    const trimmed = newExpertise.trim();
+    if (trimmed && !expertise.includes(trimmed)) {
+      setExpertise([...expertise, trimmed]);
+      setNewExpertise('');
+    }
+  };
+
+  const removeExpertise = (index: number) => {
+    setExpertise(expertise.filter((_, i) => i !== index));
+  };
+
+  const handleExpertiseKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addExpertise();
+    }
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -383,6 +477,73 @@ export default function ProfilePage() {
                       {profile.role}
                     </div>
                   </div>
+
+                  {/* Expertise (for mentors only) */}
+                  {profile.role === 'mentor' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Expertise
+                      </label>
+                      {editing ? (
+                        <div className="space-y-3">
+                          {/* Existing expertise tags */}
+                          <div className="flex flex-wrap gap-2">
+                            {expertise.map((exp, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-600/20 border border-indigo-500/50 rounded-lg text-indigo-400"
+                              >
+                                {exp}
+                                <button
+                                  type="button"
+                                  onClick={() => removeExpertise(index)}
+                                  className="text-red-400 hover:text-red-300 transition"
+                                >
+                                  ×
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                          {/* Add new expertise */}
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={newExpertise}
+                              onChange={(e) => setNewExpertise(e.target.value)}
+                              onKeyPress={handleExpertiseKeyPress}
+                              placeholder="Add expertise (e.g., Cloud, AI, Web Development)"
+                              className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            />
+                            <button
+                              type="button"
+                              onClick={addExpertise}
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition"
+                            >
+                              Add
+                            </button>
+                          </div>
+                          <p className="text-xs text-gray-400">
+                            Press Enter or click Add to add expertise tags
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {expertise.length > 0 ? (
+                            expertise.map((exp, index) => (
+                              <span
+                                key={index}
+                                className="px-3 py-1 bg-indigo-600/20 border border-indigo-500/50 rounded-lg text-indigo-400"
+                              >
+                                {exp}
+                              </span>
+                            ))
+                          ) : (
+                            <p className="text-gray-400">No expertise added yet</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Account Info */}
                   <div className="pt-6 border-t border-white/10">

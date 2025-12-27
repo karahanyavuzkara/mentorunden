@@ -22,7 +22,7 @@ export default function Home() {
     setTimeout(() => setClicked(false), 300);
   };
 
-  // Show loading or nothing while checking auth
+  // Show loading while checking auth or redirecting
   if (loading || user) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -97,11 +97,6 @@ export default function Home() {
 
               {loading ? (
                 <span className="text-gray-400">Loading...</span>
-              ) : user ? (
-                // User is logged in, will be redirected to dashboard
-                <div className="flex items-center gap-4">
-                  <span className="text-gray-300 text-sm">{user.email}</span>
-                </div>
               ) : (
                 <>
                   <Link
