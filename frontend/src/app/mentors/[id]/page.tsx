@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import Navbar from '@/components/Navbar';
+import BookingModal from '@/components/BookingModal';
 import Link from 'next/link';
 
 interface Mentor {
@@ -28,6 +29,7 @@ export default function MentorDetailPage() {
   const [mentor, setMentor] = useState<Mentor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   useEffect(() => {
     if (params.id) {
@@ -87,8 +89,12 @@ export default function MentorDetailPage() {
       router.push('/login');
       return;
     }
-    // TODO: Implement booking functionality
-    alert('Booking functionality coming soon!');
+    setIsBookingModalOpen(true);
+  };
+
+  const handleBookingSuccess = () => {
+    // Refresh page or show success message
+    router.refresh();
   };
 
   if (loading) {
@@ -195,6 +201,23 @@ export default function MentorDetailPage() {
             </div>
           )}
 
+          {/* Availability */}
+          {mentor.availability?.timeSlots && mentor.availability.timeSlots.length > 0 && (
+            <div className="mb-8">
+              <h2 className="text-2xl font-semibold mb-4">Availability</h2>
+              <div className="space-y-2">
+                {mentor.availability.timeSlots.map((slot: any, idx: number) => (
+                  <div key={idx} className="flex items-center gap-4 text-gray-300">
+                    <span className="capitalize font-medium w-24">{slot.day}</span>
+                    <span className="text-indigo-400">
+                      {slot.startTime} - {slot.endTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Expertise */}
           {mentor.expertise.length > 0 && (
             <div className="mb-8">
@@ -244,6 +267,17 @@ export default function MentorDetailPage() {
       <footer className="border-t border-white/10 py-6 text-center text-gray-500 text-sm mt-16">
         © {new Date().getFullYear()} Mentorunden. All rights reserved.
       </footer>
+
+      {/* Booking Modal */}
+      <BookingModal
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        mentorId={mentor.id}
+        mentorName={mentor.full_name || 'Mentor'}
+        hourlyRate={mentor.hourly_rate}
+        availability={mentor.availability || { timeSlots: [] }}
+        onSuccess={handleBookingSuccess}
+      />
     </div>
   );
 }

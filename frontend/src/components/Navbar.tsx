@@ -20,7 +20,7 @@ export default function Navbar() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo with glow */}
           <Link
-            href="/"
+            href={user ? "/dashboard" : "/"}
             className="text-2xl font-bold tracking-wide text-indigo-500
             drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]
             hover:drop-shadow-[0_0_20px_rgba(99,102,241,0.9)]
