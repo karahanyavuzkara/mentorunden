@@ -32,7 +32,26 @@ export default function ForgotPasswordPage() {
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
       <div className="absolute top-1/3 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[160px]" />
-
+      
+      {/* NAVBAR */}
+      <nav className="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl shadow-lg shadow-black/40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="relative flex h-16 items-center justify-center">
+            <Link
+              href="/"
+              className="
+                text-2xl font-bold tracking-wide text-indigo-500
+                transition-all duration-300
+                hover:scale-105
+                hover:drop-shadow-[0_0_22px_rgba(99,102,241,0.9)]
+              "
+            >
+              Mentorunden
+            </Link>
+          </div>
+        </div>
+      </nav>
+      
       <div className="relative z-10 w-full max-w-md">
 
         {/* TITLE ABOVE CARD */}

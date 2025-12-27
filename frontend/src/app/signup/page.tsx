@@ -50,104 +50,126 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-black text-white flex items-center justify-center px-6">
+    <div className="relative min-h-screen overflow-hidden bg-black text-white">
 
       {/* BACKGROUND GLOW */}
       <div className="absolute -top-40 -left-40 h-[500px] w-[500px] rounded-full bg-indigo-600/30 blur-[160px]" />
       <div className="absolute top-1/3 -right-40 h-[400px] w-[400px] rounded-full bg-purple-600/20 blur-[160px]" />
 
-      <div className="relative z-10 w-full max-w-md">
-
-        {/* TITLE ABOVE CARD */}
-        <h1
-          className="
-            mb-12 text-center
-            text-5xl font-extrabold text-white
-            drop-shadow-[0_0_50px_rgba(255,255,255,0.95)]
-          "
-        >
-          Sign Up
-        </h1>
-
-        {/* CARD */}
-        <div className="rounded-2xl bg-black/60 backdrop-blur-xl p-8 shadow-lg shadow-black/40 border border-white/10">
-
-          <p className="mb-6 text-center text-sm text-gray-400">
-            Already have an account?{' '}
-            <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition">
-              Sign In
-            </Link>
-          </p>
-
-          <form onSubmit={handleSubmit} className="space-y-5">
-
-            {error && (
-              <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400">
-                {error}
-              </div>
-            )}
-
-            <input
-              type="text"
-              placeholder="Full Name (optional)"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+      {/* NAVBAR */}
+      <nav className="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl shadow-lg shadow-black/40">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="relative flex h-16 items-center justify-center">
+            <Link
+              href="/"
               className="
-                w-full rounded-xl bg-gray-700/40 px-5 py-3
-                text-sm text-white placeholder-gray-400
-                outline-none backdrop-blur-md
-                focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
-                transition
-              "
-            />
-
-            <input
-              type="email"
-              placeholder="Email address"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="
-                w-full rounded-xl bg-gray-700/40 px-5 py-3
-                text-sm text-white placeholder-gray-400
-                outline-none backdrop-blur-md
-                focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
-                transition
-              "
-            />
-
-            <input
-              type="password"
-              placeholder="Password (min. 6 characters)"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="
-                w-full rounded-xl bg-gray-700/40 px-5 py-3
-                text-sm text-white placeholder-gray-400
-                outline-none backdrop-blur-md
-                focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
-                transition
-              "
-            />
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="
-                mt-4 w-full rounded-xl bg-indigo-600 py-3
-                font-semibold text-white
-                transition
-                hover:bg-indigo-700
-                disabled:opacity-50
-                shadow-[0_0_35px_rgba(99,102,241,0.5)]
-                hover:shadow-[0_0_55px_rgba(99,102,241,0.8)]
+                text-2xl font-bold tracking-wide text-indigo-500
+                transition-all duration-300
+                hover:scale-105
+                hover:drop-shadow-[0_0_22px_rgba(99,102,241,0.9)]
               "
             >
-              {loading ? 'Creating account...' : 'Create Account'}
-            </button>
-          </form>
+              Mentorunden
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* CONTENT */}
+      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 pt-24">
+        <div className="w-full max-w-md">
+
+          {/* TITLE ABOVE CARD */}
+          <h1
+            className="
+              mb-12 text-center
+              text-5xl font-extrabold text-white
+              drop-shadow-[0_0_50px_rgba(255,255,255,0.95)]
+            "
+          >
+            Sign Up
+          </h1>
+
+          {/* CARD */}
+          <div className="rounded-2xl bg-black/60 backdrop-blur-xl p-8 shadow-lg shadow-black/40 border border-white/10">
+
+            <p className="mb-6 text-center text-sm text-gray-400">
+              Already have an account?{' '}
+              <Link href="/login" className="text-indigo-400 hover:text-indigo-300 transition">
+                Sign In
+              </Link>
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+
+              {error && (
+                <div className="rounded-lg bg-red-500/10 border border-red-500/30 px-4 py-3 text-sm text-red-400">
+                  {error}
+                </div>
+              )}
+
+              <input
+                type="text"
+                placeholder="Full Name (optional)"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="
+                  w-full rounded-xl bg-gray-700/40 px-5 py-3
+                  text-sm text-white placeholder-gray-400
+                  outline-none backdrop-blur-md
+                  focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
+                  transition
+                "
+              />
+
+              <input
+                type="email"
+                placeholder="Email address"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="
+                  w-full rounded-xl bg-gray-700/40 px-5 py-3
+                  text-sm text-white placeholder-gray-400
+                  outline-none backdrop-blur-md
+                  focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
+                  transition
+                "
+              />
+
+              <input
+                type="password"
+                placeholder="Password (min. 6 characters)"
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="
+                  w-full rounded-xl bg-gray-700/40 px-5 py-3
+                  text-sm text-white placeholder-gray-400
+                  outline-none backdrop-blur-md
+                  focus:shadow-[0_0_20px_rgba(255,255,255,0.35)]
+                  transition
+                "
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="
+                  mt-4 w-full rounded-xl bg-indigo-600 py-3
+                  font-semibold text-white
+                  transition
+                  hover:bg-indigo-700
+                  disabled:opacity-50
+                  shadow-[0_0_35px_rgba(99,102,241,0.5)]
+                  hover:shadow-[0_0_55px_rgba(99,102,241,0.8)]
+                "
+              >
+                {loading ? 'Creating account...' : 'Create Account'}
+              </button>
+            </form>
+          </div>
         </div>
       </div>
     </div>
