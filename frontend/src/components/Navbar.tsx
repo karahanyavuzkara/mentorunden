@@ -29,6 +29,22 @@ export default function Navbar() {
             Mentorunden
           </Link>
 
+          {/* Navigation Links */}
+          <div className="flex items-center gap-6">
+            <Link
+              href="/blog"
+              className="text-gray-300 hover:text-white transition"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/become-mentor"
+              className="text-gray-300 hover:text-white transition"
+            >
+              Become a Mentor
+            </Link>
+          </div>
+
           {/* Auth Buttons */}
           <div className="flex items-center gap-4">
             {loading ? (
