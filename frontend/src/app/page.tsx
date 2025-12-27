@@ -81,7 +81,7 @@ export default function Home() {
               {!isLoggedIn ? (
                 <>
                   <Link
-                    href="/signin"
+                    href="/login"
                     className="text-gray-300 hover:text-white transition"
                   >
                     Sign In
