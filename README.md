@@ -7,37 +7,34 @@ A modern platform for connecting students with mentors. Built with Next.js, Expr
 - **Frontend**: Next.js 14 (React) + TypeScript + Tailwind CSS
 - **Backend**: Node.js + Express + TypeScript
 - **Database/Auth**: Supabase
-- **Monorepo**: npm workspaces
 
 ## 📁 Folder Structure
 
 ```
 mentorunden/
-├── apps/
-│   ├── web/              # Next.js frontend application
-│   │   └── src/
-│   │       ├── app/      # Next.js app router pages
-│   │       ├── components/ # React components
-│   │       ├── lib/      # Utilities and configs
-│   │       └── styles/   # Global styles
-│   └── api/              # Express backend API
-│       └── src/
-│           ├── routes/   # API routes
-│           ├── controllers/ # Route controllers
-│           └── lib/     # Utilities and configs
-├── packages/
-│   └── shared/           # Shared TypeScript types and utilities
-│       └── src/
-├── docs/                 # Documentation
-└── package.json          # Root workspace configuration
+├── frontend/          # Next.js frontend application
+│   └── src/
+│       ├── app/       # Next.js app router pages
+│       ├── components/ # React components
+│       ├── lib/       # Utilities and configs
+│       └── styles/    # Global styles
+├── backend/           # Express backend API
+│   └── src/
+│       ├── routes/    # API routes
+│       ├── controllers/ # Route controllers
+│       └── lib/       # Utilities and configs
+├── docs/              # Documentation
+├── .env.example       # Environment variables template
+└── README.md          # This file
 ```
 
 ## 🛠️ Installation
 
-1. Clone the repository:
+### Frontend Setup
+
+1. Navigate to the frontend directory:
 ```bash
-git clone <repository-url>
-cd mentorunden
+cd frontend
 ```
 
 2. Install dependencies:
@@ -45,39 +42,57 @@ cd mentorunden
 npm install
 ```
 
-3. Set up environment variables:
+3. Create a `.env.local` file (or copy from root `.env.example`):
 ```bash
-cp .env.example .env
+cp ../.env.example .env.local
+```
+
+Edit `.env.local` and add your Supabase credentials:
+- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
+- `NEXT_PUBLIC_API_URL` - Backend API URL (default: http://localhost:4000)
+
+### Backend Setup
+
+1. Navigate to the backend directory:
+```bash
+cd backend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Create a `.env` file (or copy from root `.env.example`):
+```bash
+cp ../.env.example .env
 ```
 
 Edit `.env` and add your Supabase credentials:
-- `NEXT_PUBLIC_SUPABASE_URL` - Your Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Your Supabase anonymous key
-- `SUPABASE_URL` - Your Supabase project URL (for backend)
-- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key (for backend)
+- `SUPABASE_URL` - Your Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY` - Your Supabase service role key
+- `PORT` - Server port (default: 4000)
 
-## 🏃 Running the Development Server
+## 🏃 Running the Development Servers
 
-### Run both frontend and backend:
+### Frontend
+
+From the `frontend/` directory:
 ```bash
 npm run dev
 ```
 
-This will start:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:4000
+The frontend will be available at: **http://localhost:3000**
 
-### Run individually:
+### Backend
 
-**Frontend only:**
+From the `backend/` directory:
 ```bash
-npm run dev:web
+npm run dev
 ```
 
-**Backend only:**
-```bash
-npm run dev:api
-```
+The backend API will be available at: **http://localhost:4000**
 
 ## 🧪 Testing the API
 
@@ -93,9 +108,18 @@ Expected response:
 
 ## 🏗️ Building for Production
 
-Build all packages:
+### Frontend
 ```bash
+cd frontend
 npm run build
+npm start
+```
+
+### Backend
+```bash
+cd backend
+npm run build
+npm start
 ```
 
 ## 📝 Next Steps
@@ -117,17 +141,9 @@ npm run build
    - Payment integration (if needed)
    - Email notifications
 
-## 📚 Scripts
-
-- `npm run dev` - Run both web and API in development mode
-- `npm run dev:web` - Run only the Next.js frontend
-- `npm run dev:api` - Run only the Express API
-- `npm run build` - Build all packages
-- `npm run lint` - Lint all packages
-
 ## 🔒 Security Notes
 
-- Never commit `.env` files
+- Never commit `.env` or `.env.local` files
 - Keep service role keys secure and server-side only
 - Use RLS policies in Supabase for data access control
 - Validate and sanitize all user inputs
@@ -135,4 +151,3 @@ npm run build
 ## 📄 License
 
 [Add your license here]
-
