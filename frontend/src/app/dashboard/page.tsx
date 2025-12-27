@@ -16,16 +16,39 @@ interface Profile {
   avatar_url: string | null;
 }
 
+interface Booking {
+  id: string;
+  student_id: string;
+  mentor_id: string;
+  start_time: string;
+  end_time: string;
+  status: string;
+  notes: string | null;
+  meeting_link: string | null;
+  student_name: string | null;
+  student_avatar: string | null;
+  mentor_name: string | null;
+  mentor_avatar: string | null;
+}
+
 export default function DashboardPage() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (user && profile) {
+      fetchBookings();
+    }
+  }, [user, profile]);
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -43,6 +66,105 @@ export default function DashboardPage() {
       console.error('Error fetching profile:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBookings = async () => {
+    if (!user || !profile) {
+      setBookingsLoading(false);
+      return;
+    }
+
+    try {
+      let query;
+      
+      if (profile.role === 'mentor') {
+        // For mentors: Get bookings where they are the mentor
+        // First get mentor record
+        const { data: mentorData, error: mentorError } = await supabase
+          .from('mentors')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (mentorError || !mentorData) {
+          setBookingsLoading(false);
+          return;
+        }
+
+        query = supabase
+          .from('bookings')
+          .select(`
+            *,
+            profiles!bookings_student_id_fkey (
+              full_name,
+              avatar_url
+            )
+          `)
+          .eq('mentor_id', mentorData.id)
+          .order('start_time', { ascending: false });
+      } else {
+        // For students: Get bookings where they are the student
+        query = supabase
+          .from('bookings')
+          .select(`
+            *,
+            mentors!bookings_mentor_id_fkey (
+              user_id,
+              profiles!mentors_user_id_fkey (
+                full_name,
+                avatar_url
+              )
+            )
+          `)
+          .eq('student_id', user.id)
+          .order('start_time', { ascending: false });
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Transform data based on role
+      const transformedBookings = data?.map((booking: any) => {
+        if (profile.role === 'mentor') {
+          return {
+            id: booking.id,
+            student_id: booking.student_id,
+            mentor_id: booking.mentor_id,
+            start_time: booking.start_time,
+            end_time: booking.end_time,
+            status: booking.status,
+            notes: booking.notes,
+            meeting_link: booking.meeting_link,
+            student_name: booking.profiles?.full_name || 'Unknown Student',
+            student_avatar: booking.profiles?.avatar_url,
+            mentor_name: null,
+            mentor_avatar: null,
+          };
+        } else {
+          return {
+            id: booking.id,
+            student_id: booking.student_id,
+            mentor_id: booking.mentor_id,
+            start_time: booking.start_time,
+            end_time: booking.end_time,
+            status: booking.status,
+            notes: booking.notes,
+            meeting_link: booking.meeting_link,
+            student_name: null,
+            student_avatar: null,
+            mentor_name: booking.mentors?.profiles?.full_name || 'Unknown Mentor',
+            mentor_avatar: booking.mentors?.profiles?.avatar_url,
+          };
+        }
+      }) || [];
+
+      setBookings(transformedBookings);
+    } catch (err: any) {
+      console.error('Error fetching bookings:', err);
+    } finally {
+      setBookingsLoading(false);
     }
   };
 
@@ -127,6 +249,15 @@ export default function DashboardPage() {
                       <div className="text-sm text-gray-400">Apply to become a mentor</div>
                     </Link>
                   )}
+                  {profile?.role === 'mentor' && (
+                    <Link
+                      href="/availability"
+                      className="block w-full px-4 py-3 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 rounded-lg transition text-left"
+                    >
+                      <div className="font-medium">Manage Availability</div>
+                      <div className="text-sm text-gray-400">Set your available time slots</div>
+                    </Link>
+                  )}
                 </div>
               </div>
 
@@ -135,29 +266,148 @@ export default function DashboardPage() {
                 <h3 className="text-xl font-semibold mb-4">Your Stats</h3>
                 <div className="space-y-4">
                   <div>
-                    <div className="text-3xl font-bold text-indigo-400">0</div>
-                    <div className="text-sm text-gray-400">Bookings</div>
+                    <div className="text-3xl font-bold text-indigo-400">
+                      {bookings.length}
+                    </div>
+                    <div className="text-sm text-gray-400">Total Bookings</div>
                   </div>
                   <div>
-                    <div className="text-3xl font-bold text-indigo-400">0</div>
-                    <div className="text-sm text-gray-400">Sessions</div>
+                    <div className="text-3xl font-bold text-indigo-400">
+                      {bookings.filter((b) => b.status === 'confirmed' || b.status === 'completed').length}
+                    </div>
+                    <div className="text-sm text-gray-400">Active Sessions</div>
                   </div>
                   {profile?.role === 'mentor' && (
                     <div>
-                      <div className="text-3xl font-bold text-indigo-400">0</div>
+                      <div className="text-3xl font-bold text-indigo-400">
+                        {Array.from(new Set(bookings.map((b) => b.student_id))).length}
+                      </div>
                       <div className="text-sm text-gray-400">Students</div>
+                    </div>
+                  )}
+                  {profile?.role === 'student' && (
+                    <div>
+                      <div className="text-3xl font-bold text-indigo-400">
+                        {Array.from(new Set(bookings.map((b) => b.mentor_id))).length}
+                      </div>
+                      <div className="text-sm text-gray-400">Mentors</div>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Recent Activity */}
+              {/* My Students / My Mentors */}
               <div className="bg-white/5 backdrop-blur border border-white/10 rounded-xl p-6 md:col-span-2 lg:col-span-3">
-                <h3 className="text-xl font-semibold mb-4">Recent Activity</h3>
-                <div className="text-center py-8 text-gray-400">
-                  <p>No recent activity yet</p>
-                  <p className="text-sm mt-2">Your bookings and sessions will appear here</p>
-                </div>
+                <h3 className="text-xl font-semibold mb-4">
+                  {profile?.role === 'mentor' ? 'My Students' : 'My Mentors'}
+                </h3>
+                {bookingsLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                  </div>
+                ) : bookings.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <p>No {profile?.role === 'mentor' ? 'students' : 'mentors'} yet</p>
+                    <p className="text-sm mt-2">
+                      {profile?.role === 'mentor' 
+                        ? 'Your students will appear here once they book sessions with you'
+                        : 'Your mentors will appear here once you book sessions with them'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {profile?.role === 'mentor' ? (
+                      // My Students - Show unique students
+                      (() => {
+                        const uniqueStudents = Array.from(
+                          new Map(
+                            bookings.map((b) => [b.student_id, {
+                              id: b.student_id,
+                              name: b.student_name,
+                              avatar: b.student_avatar,
+                              bookings: bookings.filter((bk) => bk.student_id === b.student_id),
+                            }])
+                          ).values()
+                        );
+                        return uniqueStudents.map((student) => (
+                          <div
+                            key={student.id}
+                            className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10 hover:border-indigo-500/50 transition"
+                          >
+                            {student.avatar ? (
+                              <img
+                                src={student.avatar}
+                                alt={student.name || 'Student'}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-indigo-600/20 flex items-center justify-center">
+                                <span className="text-lg text-indigo-400">
+                                  {student.name?.[0]?.toUpperCase() || 'S'}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium">{student.name}</div>
+                              <div className="text-sm text-gray-400">
+                                {student.bookings.length} session{student.bookings.length !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              {student.bookings.filter((b) => b.status === 'confirmed' || b.status === 'completed').length} active
+                            </div>
+                          </div>
+                        ));
+                      })()
+                    ) : (
+                      // My Mentors - Show unique mentors
+                      (() => {
+                        const uniqueMentors = Array.from(
+                          new Map(
+                            bookings.map((b) => [b.mentor_id, {
+                              id: b.mentor_id,
+                              name: b.mentor_name,
+                              avatar: b.mentor_avatar,
+                              bookings: bookings.filter((bk) => bk.mentor_id === b.mentor_id),
+                            }])
+                          ).values()
+                        );
+                        return uniqueMentors.map((mentor) => (
+                          <div
+                            key={mentor.id}
+                            className="flex items-center gap-4 p-4 bg-white/5 rounded-lg border border-white/10 hover:border-indigo-500/50 transition"
+                          >
+                            {mentor.avatar ? (
+                              <img
+                                src={mentor.avatar}
+                                alt={mentor.name || 'Mentor'}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-indigo-600/20 flex items-center justify-center">
+                                <span className="text-lg text-indigo-400">
+                                  {mentor.name?.[0]?.toUpperCase() || 'M'}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium">{mentor.name}</div>
+                              <div className="text-sm text-gray-400">
+                                {mentor.bookings.length} session{mentor.bookings.length !== 1 ? 's' : ''}
+                              </div>
+                            </div>
+                            <Link
+                              href={`/mentors/${mentor.id}`}
+                              className="text-sm text-indigo-400 hover:text-indigo-300 transition"
+                            >
+                              View Profile →
+                            </Link>
+                          </div>
+                        ));
+                      })()
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

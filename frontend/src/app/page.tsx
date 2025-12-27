@@ -1,18 +1,35 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [clicked, setClicked] = useState(false);
+  const { user, loading } = useAuth();
+  const router = useRouter();
 
-  // 🔐 Auth simulation
-  const isLoggedIn = false;
+  // Redirect logged in users to dashboard
+  useEffect(() => {
+    if (!loading && user) {
+      router.push("/dashboard");
+    }
+  }, [user, loading, router]);
 
   const handleLogoClick = () => {
     setClicked(true);
     setTimeout(() => setClicked(false), 300);
   };
+
+  // Show loading or nothing while checking auth
+  if (loading || user) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white">
@@ -78,7 +95,14 @@ export default function Home() {
                 EN
               </button>
 
-              {!isLoggedIn ? (
+              {loading ? (
+                <span className="text-gray-400">Loading...</span>
+              ) : user ? (
+                // User is logged in, will be redirected to dashboard
+                <div className="flex items-center gap-4">
+                  <span className="text-gray-300 text-sm">{user.email}</span>
+                </div>
+              ) : (
                 <>
                   <Link
                     href="/login"
@@ -95,16 +119,6 @@ export default function Home() {
                     Sign Up
                   </Link>
                 </>
-              ) : (
-                <Link href="/profile" className="group">
-                  <img
-                    src="https://i.pravatar.cc/40"
-                    alt="Profile"
-                    className="h-9 w-9 rounded-full
-                    group-hover:scale-105 transition
-                    shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                  />
-                </Link>
               )}
             </div>
           </div>
