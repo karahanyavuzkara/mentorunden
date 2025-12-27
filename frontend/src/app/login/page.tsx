@@ -123,7 +123,6 @@ export default function LoginPage() {
                 Forgot your password?
               </Link>
             </div>
-
           </form>
         </div>
       </div>
