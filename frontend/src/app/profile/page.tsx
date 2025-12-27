@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const [bio, setBio] = useState('');
   const [expertise, setExpertise] = useState<string[]>([]);
   const [newExpertise, setNewExpertise] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<number | null>(null);
   const [uploading, setUploading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -85,10 +86,14 @@ export default function ProfilePage() {
         } else if (mentorData) {
           setMentorProfile(mentorData);
           setExpertise(mentorData.expertise || []);
+          setHourlyRate(mentorData.hourly_rate || null);
           // Use mentor bio if available, otherwise use profile bio
           if (mentorData.bio) {
             setBio(mentorData.bio);
           }
+        } else {
+          // Mentor record doesn't exist yet
+          setHourlyRate(null);
         }
       }
     } catch (err: any) {
@@ -144,6 +149,7 @@ export default function ProfilePage() {
             .update({
               bio: bio || null,
               expertise: expertise,
+              hourly_rate: hourlyRate || null,
             })
             .eq('id', mentorProfile.id);
 
@@ -156,6 +162,7 @@ export default function ProfilePage() {
               user_id: user.id,
               bio: bio || null,
               expertise: expertise,
+              hourly_rate: hourlyRate || null,
               is_active: true,
             })
             .select()
@@ -192,9 +199,12 @@ export default function ProfilePage() {
     }
     if (mentorProfile) {
       setExpertise(mentorProfile.expertise || []);
+      setHourlyRate(mentorProfile.hourly_rate || null);
       if (mentorProfile.bio) {
         setBio(mentorProfile.bio || '');
       }
+    } else {
+      setHourlyRate(null);
     }
     setAvatarFile(null);
     setNewExpertise('');
@@ -477,6 +487,35 @@ export default function ProfilePage() {
                       {profile.role}
                     </div>
                   </div>
+
+                  {/* Hourly Rate (for mentors only) */}
+                  {profile.role === 'mentor' && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-300 mb-2">
+                        Hourly Rate ($)
+                      </label>
+                      {editing ? (
+                        <div className="space-y-2">
+                          <input
+                            type="number"
+                            value={hourlyRate || ''}
+                            onChange={(e) => setHourlyRate(e.target.value ? parseFloat(e.target.value) : null)}
+                            min="0"
+                            step="0.01"
+                            className="w-full px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Enter your hourly rate (e.g., 50)"
+                          />
+                          <p className="text-xs text-gray-400">
+                            Set your hourly rate in USD. This will be displayed on your mentor profile.
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-gray-300">
+                          {hourlyRate ? `$${hourlyRate}/hour` : 'Not set'}
+                        </p>
+                      )}
+                    </div>
+                  )}
 
                   {/* Expertise (for mentors only) */}
                   {profile.role === 'mentor' && (

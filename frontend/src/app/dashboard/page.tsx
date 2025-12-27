@@ -444,6 +444,8 @@ export default function DashboardPage() {
                                     ? 'bg-yellow-600/20 text-yellow-400'
                                     : booking.status === 'completed'
                                     ? 'bg-blue-600/20 text-blue-400'
+                                    : booking.status === 'cancelled'
+                                    ? 'bg-red-600/20 text-red-400'
                                     : 'bg-gray-600/20 text-gray-400'
                                 }`}>
                                   {booking.status}
