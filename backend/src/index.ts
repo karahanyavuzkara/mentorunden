@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import healthRoutes from './routes/health';
-import testRoutes from './routes/test';
 
 dotenv.config();
 
@@ -23,7 +22,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/health', healthRoutes);
-app.use('/test', testRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Mentorunden API' });

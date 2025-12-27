@@ -9,6 +9,7 @@ if (!supabaseUrl || !supabaseServiceKey) {
 }
 
 // Create Supabase client with service role key (for backend/admin operations)
+// Note: Service role key bypasses RLS, use with caution
 export const supabase = createClient(
   supabaseUrl || 'https://placeholder.supabase.co',
   supabaseServiceKey || 'placeholder-key',
