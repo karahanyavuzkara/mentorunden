@@ -112,7 +112,7 @@ export default function Home() {
       </nav>
 
       {/* HERO */}
-      <main className="relative z-10 max-w-7xl mx-auto px-6 pt-40 pb-28 text-center">
+      <main className="relative min-h-screen max-w-7xl mx-auto mx-auto px-6 pt-32 pb-32 flex flex-col justify-center text-center">
         <h2 className="text-6xl font-extrabold leading-tight">
           Find Your{" "}
           <span className="text-indigo-500 drop-shadow-[0_0_30px_rgba(99,102,241,0.7)]">
