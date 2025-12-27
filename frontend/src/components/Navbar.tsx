@@ -41,6 +41,12 @@ export default function Navbar() {
                 >
                   Dashboard
                 </Link>
+                <Link
+                  href="/profile"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Profile
+                </Link>
                 <span className="text-gray-500">|</span>
                 <span className="text-gray-300 text-sm">{user.email}</span>
                 <button
