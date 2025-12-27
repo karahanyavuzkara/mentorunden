@@ -15,39 +15,53 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          <div className="flex items-center">
-            <Link href="/" className="text-xl font-bold text-indigo-600">
-              Mentorunden
-            </Link>
-          </div>
-          <div className="flex items-center space-x-4">
+    <nav className="relative z-10 border-b border-white/10 backdrop-blur">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo with glow */}
+          <Link
+            href="/"
+            className="text-2xl font-bold tracking-wide text-indigo-500
+            drop-shadow-[0_0_12px_rgba(99,102,241,0.6)]
+            hover:drop-shadow-[0_0_20px_rgba(99,102,241,0.9)]
+            transition"
+          >
+            Mentorunden
+          </Link>
+
+          {/* Auth Buttons */}
+          <div className="flex items-center gap-4">
             {loading ? (
-              <span className="text-gray-500">Loading...</span>
+              <span className="text-gray-400">Loading...</span>
             ) : user ? (
               <>
-                <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600">
+                <Link
+                  href="/dashboard"
+                  className="text-gray-300 hover:text-white transition"
+                >
                   Dashboard
                 </Link>
                 <span className="text-gray-500">|</span>
-                <span className="text-gray-700">{user.email}</span>
+                <span className="text-gray-300 text-sm">{user.email}</span>
                 <button
                   onClick={handleSignOut}
-                  className="text-gray-700 hover:text-indigo-600"
+                  className="text-gray-300 hover:text-white transition"
                 >
                   Sign Out
                 </button>
               </>
             ) : (
               <>
-                <Link href="/login" className="text-gray-700 hover:text-indigo-600">
-                  Login
+                <Link
+                  href="/login"
+                  className="text-gray-300 hover:text-white transition"
+                >
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                  className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition font-medium
+                  shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/60"
                 >
                   Sign Up
                 </Link>
