@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [clicked, setClicked] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -20,6 +21,21 @@ export default function Home() {
   const handleLogoClick = () => {
     setClicked(true);
     setTimeout(() => setClicked(false), 300);
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/mentors?search=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      router.push('/mentors');
+    }
+  };
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch(e);
+    }
   };
 
   // Show loading while checking auth or redirecting
@@ -63,9 +79,15 @@ export default function Home() {
             </div>
 
             {/* CENTER SEARCH */}
-            <div className="absolute left-1/2 -translate-x-1/2">
+            <form 
+              onSubmit={handleSearch}
+              className="absolute left-1/2 -translate-x-1/2"
+            >
               <input
                 type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearchKeyDown}
                 placeholder="Search mentors..."
                 className="
                 w-[420px]
@@ -78,9 +100,11 @@ export default function Home() {
                 backdrop-blur-md
                 shadow-[0_0_10px_rgba(255,255,255,0.15)]
                 transition
+                focus:shadow-[0_0_20px_rgba(99,102,241,0.5)]
+                focus:ring-2 focus:ring-indigo-500/50
                 "
               />
-            </div>
+            </form>
 
             {/* RIGHT */}
             <div className="flex items-center gap-6">

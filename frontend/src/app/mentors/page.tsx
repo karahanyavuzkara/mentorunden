@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import Navbar from '@/components/Navbar';
 import Link from 'next/link';
@@ -18,15 +19,21 @@ interface Mentor {
   email: string;
 }
 
-export default function MentorsPage() {
+function MentorsPageContent() {
+  const searchParams = useSearchParams();
   const [mentors, setMentors] = useState<Mentor[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [expertiseFilter, setExpertiseFilter] = useState<string>('');
 
   useEffect(() => {
+    // Get search query from URL params
+    const searchParam = searchParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+    }
     fetchMentors();
-  }, []);
+  }, [searchParams]);
 
   const fetchMentors = async () => {
     try {
@@ -249,6 +256,21 @@ export default function MentorsPage() {
         © {new Date().getFullYear()} Mentorunden. All rights reserved.
       </footer>
     </div>
+  );
+}
+
+export default function MentorsPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-black text-white">
+        <Navbar />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+        </div>
+      </div>
+    }>
+      <MentorsPageContent />
+    </Suspense>
   );
 }
 
