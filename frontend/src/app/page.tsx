@@ -1,22 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 export default function Home() {
-  const [scrolled, setScrolled] = useState(false);
   const [clicked, setClicked] = useState(false);
 
-  // Scroll detection
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  // 🔐 Auth simulation
+  const isLoggedIn = false;
 
-  // Neon click flash
   const handleLogoClick = () => {
     setClicked(true);
     setTimeout(() => setClicked(false), 300);
@@ -32,43 +24,88 @@ export default function Home() {
       {/* NAVBAR */}
       <nav className="fixed top-0 z-50 w-full bg-black/60 backdrop-blur-xl shadow-lg shadow-black/40">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="flex h-16 items-center justify-between">
+          <div className="relative flex h-16 items-center justify-between">
 
-            {/* LOGO */}
-            <Link
-              href="/"
-              onClick={handleLogoClick}
-              className={`relative text-2xl font-bold tracking-wide text-indigo-500
-              transition-all duration-300
-              hover:scale-105
-              hover:drop-shadow-[0_0_22px_rgba(99,102,241,0.9)]
-              ${clicked ? "drop-shadow-[0_0_40px_rgba(99,102,241,1)] scale-110" : ""}
-              `}
-            >
-              Mentorunden
-
-              {/* Neon flash */}
-              {clicked && (
-                <span className="absolute inset-0 rounded-full bg-indigo-500/40 blur-xl animate-ping" />
-              )}
-            </Link>
-
-            {/* AUTH */}
-            <div className="flex items-center gap-4">
+            {/* LEFT */}
+            <div className="flex items-center gap-6">
               <Link
-                href="/signin"
+                href="/"
+                onClick={handleLogoClick}
+                className={`relative text-2xl font-bold tracking-wide text-indigo-500
+                transition-all duration-300
+                hover:scale-105
+                hover:drop-shadow-[0_0_22px_rgba(99,102,241,0.9)]
+                ${clicked ? "drop-shadow-[0_0_40px_rgba(99,102,241,1)] scale-110" : ""}
+                `}
+              >
+                Mentorunden
+                {clicked && (
+                  <span className="absolute inset-0 rounded-full bg-indigo-500/40 blur-xl animate-ping" />
+                )}
+              </Link>
+            </div>
+
+            {/* CENTER SEARCH */}
+            <div className="absolute left-1/2 -translate-x-1/2">
+              <input
+                type="text"
+                placeholder="Search mentors..."
+                className="
+                w-[420px]
+                rounded-full
+                bg-gray-700/40
+                px-6 py-3
+                text-sm text-white
+                placeholder-gray-300
+                outline-none
+                backdrop-blur-md
+                shadow-[0_0_10px_rgba(255,255,255,0.15)]
+                transition
+                "
+              />
+            </div>
+
+            {/* RIGHT */}
+            <div className="flex items-center gap-6">
+              <Link
+                href="/blog"
                 className="text-gray-300 hover:text-white transition"
               >
-                Sign In
+                Blog
               </Link>
 
-              <Link
-                href="/signup"
-                className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition font-medium
-                shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/60"
-              >
-                Sign Up
-              </Link>
+              <button className="text-gray-300 hover:text-white transition">
+                EN
+              </button>
+
+              {!isLoggedIn ? (
+                <>
+                  <Link
+                    href="/signin"
+                    className="text-gray-300 hover:text-white transition"
+                  >
+                    Sign In
+                  </Link>
+
+                  <Link
+                    href="/signup"
+                    className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 transition font-medium
+                    shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/60"
+                  >
+                    Sign Up
+                  </Link>
+                </>
+              ) : (
+                <Link href="/profile" className="group">
+                  <img
+                    src="https://i.pravatar.cc/40"
+                    alt="Profile"
+                    className="h-9 w-9 rounded-full
+                    group-hover:scale-105 transition
+                    shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                  />
+                </Link>
+              )}
             </div>
           </div>
         </div>
@@ -111,23 +148,18 @@ export default function Home() {
       {/* FOOTER */}
       <footer className="relative z-10 border-t border-white/10 bg-black/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 py-10">
-          
-          <div className="flex justify-between items-start">
-            {/* Support */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
-                Support
-              </h4>
-              <a
-                href="mailto:mentorunden@gmail.com"
-                className="mt-3 block text-sm text-gray-400 hover:text-indigo-500 transition"
-              >
-                mentorunden@gmail.com
-              </a>
-            </div>
+          <div>
+            <h4 className="text-sm font-semibold text-gray-300 uppercase tracking-wider">
+              Support
+            </h4>
+            <a
+              href="mailto:mentorunden@gmail.com"
+              className="mt-3 block text-sm text-gray-400 hover:text-indigo-500 transition"
+            >
+              mentorunden@gmail.com
+            </a>
           </div>
 
-          {/* Bottom */}
           <div className="mt-8 text-center text-xs text-gray-500">
             © {new Date().getFullYear()} Mentorunden. All rights reserved.
           </div>
