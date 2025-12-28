@@ -199,20 +199,40 @@ export default function DashboardPage() {
         }),
       });
 
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        let errorMessage = 'Failed to cancel booking';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch (e) {
+          // If response is not JSON, use status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
+
       const data = await response.json();
       console.log('Backend response:', data);
-
-      if (!response.ok) {
-        console.error('Cancel booking error:', data);
-        throw new Error(data.message || 'Failed to cancel booking');
-      }
 
       // Refresh bookings
       await fetchBookings();
       alert('Session cancelled successfully. The student has been notified via email.');
     } catch (err: any) {
       console.error('Error cancelling booking:', err);
-      alert(err.message || 'Failed to cancel booking. Please check if the backend server is running.');
+      
+      // Better error messages for different error types
+      let errorMessage = 'Failed to cancel booking.';
+      
+      if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+        errorMessage = 'Cannot connect to the server. Please make sure the backend server is running on port 4000.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      } else {
+        errorMessage = 'An unexpected error occurred. Please check if the backend server is running.';
+      }
+      
+      alert(errorMessage);
     }
   };
 
