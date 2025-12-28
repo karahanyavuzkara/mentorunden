@@ -480,7 +480,7 @@ All SQL scripts and documentation are in the `docs/` directory:
 ## 👥 Authors
 
 - Karahan Yavuz KARA
-- Baran Okan
+- Baran HOŞCA
 
 ## 🙏 Acknowledgments
 
